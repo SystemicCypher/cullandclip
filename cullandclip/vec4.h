@@ -29,6 +29,7 @@ public:
     
     Vecpt(int dimension, bool is_vector){
         n_tuple = new float[dimension];
+        for(int i = 0; i < dimension-1; i++) n_tuple[i] = 0.0;
         dim = dimension;
         vector = is_vector;
     }
@@ -53,15 +54,17 @@ public:
             case true:
                 output = new Vecpt(4, POINT);
                 break;
-                
+
             case false:
                 output = new Vecpt(4, VECTOR);
                 break;
 
             default:
+                output = new Vecpt();
                 break;
 
             }
+            return *output;
         }
     }
 
