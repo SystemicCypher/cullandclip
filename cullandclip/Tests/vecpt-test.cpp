@@ -21,7 +21,9 @@ int main(){
     std::cout<<"("<<w.get_value(0)<<", "<<w.get_value(1)<<", "<<w.get_value(2)<<", "<<w.get_value(3)<<") Dims: "<<w.get_dim()<<" Point? "<<(w.is_point() ? "Yes" : "No")<<std::endl;
 
     float dotted = x.dot(y);
+    Vecpt crossed = x.cross(y);
     std::cout<<dotted<<std::endl;
+    std::cout<<"("<<crossed.get_value(0)<<", "<<crossed.get_value(1)<<", "<<crossed.get_value(2)<<") Dims: "<<crossed.get_dim()<<" Point? "<<(crossed.is_point() ? "Yes" : "No")<<std::endl;
 
     return 0;
 }

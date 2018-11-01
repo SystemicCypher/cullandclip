@@ -171,10 +171,23 @@ public:
             output = new Vecpt(0, POINT);
             return *output;
         }
-        if (dim == v.get_dim() && (dim == 3 || dim == 7)){
-            
+        else if (dim == v.get_dim() && (dim == 3)){
+            float i = n_tuple[1] * v.get_value(2) - n_tuple[2] * v.get_value(1);
+		    float j = n_tuple[0] * v.get_value(2) - n_tuple[2] * v.get_value(0);
+		    float k = n_tuple[0] * v.get_value(1) - n_tuple[1] * v.get_value(0);
+
+		    output = new Vecpt(3, VECTOR);
+            output->set_dim_val(0, i);
+            output->set_dim_val(1, -j);
+            output->set_dim_val(2, k);
+
+            return *output;
         }
-    }
+        else{
+            output = new Vecpt(0, POINT);
+            return *output;
+        }
+    } 
 
    /* Vecpt operator-(const Vecpt& v){
         Vecpt temp(v);
