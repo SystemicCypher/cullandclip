@@ -18,15 +18,17 @@
 #define VECTOR true
 #define POINT false
 
+#include <math.h>
+
 class Vecpt{
 public:
-// The constructor produces, by default 
+// The constructor produces, by default a real 3D point
     Vecpt(){
         n_tuple = new float[REAL_3D];
         dim = REAL_3D;
         vector = POINT;
     }
-    
+// If you wish to set the dimension and whether it's a vector or a point
     Vecpt(int dimension, bool is_vector){
         n_tuple = new float[dimension];
         for(int i = 0; i < dimension-1; i++) n_tuple[i] = 0.0;
@@ -46,22 +48,29 @@ public:
     ~Vecpt(){
         delete n_tuple;
     }
-
+// Returns if the vecpt is a point or not - I'm considering using is_vector instead
     bool is_point() const{
         return !vector;
     }
 
+    bool is_vector() const{
+        return vector;
+    }
+//  Returns the dimensions of the vecpt
     int get_dim() const{
         return dim;
     }
 
-    //Gets value from dimension 0 to n-1
+//  Gets value from dimension 0 to n-1 -> basically a wrapper for n_tuple[i]
+//  If it fails it will return "not a number"
     float get_value(int from_dim) const{
         if(from_dim < dim) return n_tuple[from_dim];
-        return 0.0;
+        return NAN;
     }
     
 // Really only useful for the project, not the general class
+// It will homogenize 3D points/vectors into 4D points/vectors
+// <INCOMPLETE>
     static Vecpt homogenize4D(const Vecpt pt_vec){
         if(pt_vec.get_dim() == REAL_3D){
             Vecpt* output;
@@ -83,7 +92,8 @@ public:
         }
     }
 
-    //Only to be used for operators
+//  Only to be used for operators
+//  Is likely to be deleted next iteration
     void add_dim(){
         int new_dim = dim + 1;
         bool new_vector = !(this->is_point());
@@ -98,13 +108,14 @@ public:
         delete temp;
     }
 
+//  Sets dimension value, select a dimension, then the float value to insert
     void set_dim_val(int dimension, float value){
         if(dimension < dim){
             n_tuple[dimension] = value;
         }
     }
 
-
+//  Overloaded + operator. Adds two vectors/points together. If pt + vec will return pt 
     Vecpt operator+(const Vecpt& v) {
         Vecpt* output;
 		if(v.get_dim() == dim){
@@ -139,6 +150,53 @@ public:
         }
 	}
 
+    Vecpt operator-(const Vecpt& v){
+        Vecpt* output;
+		if(v.get_dim() == dim){
+            output = (vector == !(v.is_point())) ? new Vecpt(dim, VECTOR) : new Vecpt(dim, POINT);
+            for(int i = 0; i < dim; i++){
+                output->set_dim_val(i, n_tuple[i] - v.get_value(i));
+            }
+            return *output;
+        }
+        else{
+            int selected_dim = (dim > v.get_dim()) ? dim : v.get_dim();
+            output = (vector == !(v.is_point())) ? new Vecpt(selected_dim, VECTOR) : new Vecpt(selected_dim, POINT);
+            
+            if(dim == selected_dim){
+                for(int i = 0; i < v.get_dim(); i++){
+                    output->set_dim_val(i, n_tuple[i] - v.get_value(i));
+                }
+                for(int i = v.get_dim(); i < dim; i++){
+                    output->set_dim_val(i, n_tuple[i]);
+                }
+            }
+            else{
+                for(int i = 0; i < dim; i++){
+                    output->set_dim_val(i, n_tuple[i] - v.get_value(i));
+                }
+                for(int i = dim; i < v.get_dim(); i++){
+                    output->set_dim_val(i, v.get_value(i));
+                }
+            }
+
+            return *output;
+        }
+    }
+
+    void operator=(const Vecpt &v) {
+        float* temp = n_tuple;
+        float* output = new float[v.get_dim()];
+
+        for(int i = 0; i < v.get_dim(); i++){
+            output[i] = v.get_value(i);
+        }
+        dim = v.get_dim();
+        vector = !(v.is_point());
+        n_tuple = output;
+        delete temp;
+	}
+
     void make_vector(){
         vector = true;
     }
@@ -148,9 +206,17 @@ public:
     }
 
     Vecpt operator*(float f){
-        Vecpt* output = new Vecpt[dim];
+        Vecpt* output = new Vecpt(dim, vector);
         for (int i = 0; i < dim; i++){
             output->set_dim_val(i, n_tuple[i] * f);
+        }
+        return *output;
+    }
+
+    Vecpt operator/(float f){
+        Vecpt* output = new Vecpt(dim, vector);
+        for (int i = 0; i < dim; i++){
+            output->set_dim_val(i, n_tuple[i] / f);
         }
         return *output;
     }
@@ -189,11 +255,24 @@ public:
         }
     } 
 
-   /* Vecpt operator-(const Vecpt& v){
-        Vecpt temp(v);
-        for()
+    float magnitude(){
+        float sqrtMe = 0.0;
+        for(int i = 0; i < dim; i++){
+            sqrtMe += n_tuple[i] * n_tuple[i];
+        }
+        return sqrt(sqrtMe);
+    }
 
-    }*/
+    Vecpt normalize(){
+        Vecpt* output;
+        float mag = magnitude();
+        output = new Vecpt(dim, vector);
+        for(int i = 0; i < dim; i++){
+            output->set_dim_val(i, n_tuple[i] / mag);
+        }
+        return *output;
+    }
+
 
 private:
     float* n_tuple;

@@ -17,6 +17,8 @@ int main(){
     z.add_dim();
     z.set_dim_val(3, 6.9);
     std::cout<<"("<<z.get_value(0)<<", "<<z.get_value(1)<<", "<<z.get_value(2)<<", "<<z.get_value(3)<<") Dims: "<<z.get_dim()<<" Point? "<<(z.is_point() ? "Yes" : "No")<<std::endl;
+    z = z/3.0;
+    std::cout<<"("<<z.get_value(0)<<", "<<z.get_value(1)<<", "<<z.get_value(2)<<", "<<z.get_value(3)<<") Dims: "<<z.get_dim()<<" Point? "<<(z.is_point() ? "Yes" : "No")<<std::endl;
     Vecpt w = z + x;
     std::cout<<"("<<w.get_value(0)<<", "<<w.get_value(1)<<", "<<w.get_value(2)<<", "<<w.get_value(3)<<") Dims: "<<w.get_dim()<<" Point? "<<(w.is_point() ? "Yes" : "No")<<std::endl;
 
