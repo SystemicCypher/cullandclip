@@ -19,19 +19,21 @@
 #define POINT false
 
 #include <math.h>
+#include <stdexcept>
 
 class Vecpt{
 public:
 // The constructor produces, by default a real 3D point
     Vecpt(){
         n_tuple = new float[REAL_3D];
+        for(int i = 0; i < REAL_3D; i++) n_tuple[i] = 0.0;
         dim = REAL_3D;
         vector = POINT;
     }
 // If you wish to set the dimension and whether it's a vector or a point
     Vecpt(int dimension, bool is_vector){
         n_tuple = new float[dimension];
-        for(int i = 0; i < dimension-1; i++) n_tuple[i] = 0.0;
+        for(int i = 0; i < dimension; i++) n_tuple[i] = 0.0;
         dim = dimension;
         vector = is_vector;
     }
@@ -219,6 +221,24 @@ public:
             output->set_dim_val(i, n_tuple[i] / f);
         }
         return *output;
+    }
+
+    bool operator==(const Vecpt& v){
+        bool output;
+        output =  (dim == v.get_dim()) && (vector == v.is_vector());
+        if(!output) return false;
+        for(int i = 0; i < dim; i++){
+            if(n_tuple[i] != v.get_value(i)) return false;
+        }
+        return true;
+
+    }
+
+    float operator[](int index){
+        if(index >= dim){
+            throw std::out_of_range("Out of Bounds: Accessing dimension that does not exist\n");
+        }
+        return n_tuple[index];
     }
 
     float dot(const Vecpt& v){
