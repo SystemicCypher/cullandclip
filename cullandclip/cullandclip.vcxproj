@@ -18,6 +18,20 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Object.h" />
+    <ClInclude Include="Placement.h" />
+    <ClInclude Include="single-include.h" />
+    <ClInclude Include="triangle.h" />
+    <ClInclude Include="vec3.h" />
+    <ClInclude Include="vec4.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Object.cpp" />
+    <ClCompile Include="triangle.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{B1B0BF5F-729F-4DCA-B775-B41AFFCCAFFA}</ProjectGuid>
@@ -114,19 +128,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\..\Desktop\Projects\Schoolwork\Working\486\main.cpp" />
-    <ClCompile Include="..\..\..\..\Desktop\Projects\Schoolwork\Working\486\Object.cpp" />
-    <ClCompile Include="..\..\..\..\Desktop\Projects\Schoolwork\Working\486\triangle.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\..\Desktop\Projects\Schoolwork\Working\486\Camera.h" />
-    <ClInclude Include="..\..\..\..\Desktop\Projects\Schoolwork\Working\486\Object.h" />
-    <ClInclude Include="..\..\..\..\Desktop\Projects\Schoolwork\Working\486\Placement.h" />
-    <ClInclude Include="..\..\..\..\Desktop\Projects\Schoolwork\Working\486\single-include.h" />
-    <ClInclude Include="..\..\..\..\Desktop\Projects\Schoolwork\Working\486\triangle.h" />
-    <ClInclude Include="..\..\..\..\Desktop\Projects\Schoolwork\Working\486\vec3.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

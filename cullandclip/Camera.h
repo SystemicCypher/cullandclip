@@ -61,7 +61,8 @@ private:
 	float _dMax;
 
 	vec3 _ptMinSub;
-	Rectangle _nearPlane; 
+	Rectangle _nearPlane;
+	//Rectangle _farPlane;  Might need a far plane saved
 };
 
 #endif
