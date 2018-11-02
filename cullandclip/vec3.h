@@ -23,8 +23,16 @@ public:
 		z = v.z;
 	}
 
-	float operator*(const vec3 &v) {
+	int operator*(const vec3 &v) {
 		return x * v.x + y * v.y + z * v.z;
+	}
+
+	vec3 operator*(float v) {
+		return vec3(x * v, y * v, z * v);
+	}
+
+	vec3 operator/(float val) {
+		return vec3(x / val, y / val, z / val);
 	}
 
 	vec3 cross(const vec3 &v) {
@@ -35,18 +43,26 @@ public:
 		return vec3(i, j, k);
 	}
 
-	
 	float& operator[](int i) {
 		switch (i) {
-		case 0: return x;
+		case 0: case 'x': return x;
 			break;
-		case 1: return y;
+		case 1: case 'y': return y;
 			break;
-		case 2: return z;
+		case 2: case 'z': return z;
 			break;
 		default:
 			throw std::out_of_range("Out of bounds accessing element of vec3.\n");
 		}
+	}
+
+	float magnitude() {
+		return sqrt(x*x + y * y + z * z);
+	}
+
+	vec3 normalize() {
+		float len = magnitude();
+		return (*this) / len;
 	}
 
 private:

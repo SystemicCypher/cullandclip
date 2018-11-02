@@ -12,10 +12,10 @@
 // OBJECT CLASS 
 // ======================================================================================
 // Base class object for all KINDS of objects (model space, triangles, bag, camera)
-//
+// Can dynamic_cast down to sub classes
 //=======================================================================================
 
-enum Kind { MODEL = 0, BAG = 1, TRIANGLE = 3, CAMERA = 9, NONE = -1 };
+enum Kind { MODEL, BAG, TRIANGLE = 3, CAMERA = 9, NONE = -1 };
 
 typedef int KidID;
 
@@ -40,12 +40,13 @@ public:
 	const int getObjectID() const;
 
 	const vec3 getRegPt() const;
-protected:
-	vec3 _ptReg; // Offset from objects origin
 
-private:
+	// SEE PAGE 44 for near plane points
+
+protected:
 	int _objID;  // Object ID
 	Kind _kID;   // Kind ID 
+	vec3 _ptReg; // Offset from objects origin
 
 	LocalData _localData; // stores the objects in this objects space
 	std::vector<KidLoc> _subObjectPos;
