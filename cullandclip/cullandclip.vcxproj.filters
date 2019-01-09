@@ -33,7 +33,10 @@
     <ClInclude Include="vec3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vec4.h">
+    <ClInclude Include="vecpt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="frsthelp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,12 +20,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="frsthelp.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Placement.h" />
     <ClInclude Include="single-include.h" />
     <ClInclude Include="triangle.h" />
     <ClInclude Include="vec3.h" />
-    <ClInclude Include="vec4.h" />
+    <ClInclude Include="vecpt.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

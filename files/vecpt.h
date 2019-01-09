@@ -1,3 +1,9 @@
+//====================================
+// Names:
+// Austin Loza austinloza@csu.fullerton.edu
+// Richard Ung rung921@csu.fullerton.edu
+//====================================
+
 /*
 * --------------------------------------------------
 * Vecpt (Vector - Point) Class
@@ -143,30 +149,6 @@ public:
 */
     float get_value(int from_dim) const;
     
-// Really only useful for the project, not the general class
-// It will homogenize 3D points/vectors into 4D points/vectors
-// <INCOMPLETE>
-/*    static Vecpt homogenize4D(const Vecpt pt_vec){
-        if(pt_vec.get_dim() == REAL_3D){
-            Vecpt* output;
-            switch(pt_vec.is_point()){
-            case true:
-                output = new Vecpt(4, POINT);
-                break;
-
-            case false:
-                output = new Vecpt(4, VECTOR);
-                break;
-
-            default:
-                output = new Vecpt();
-                break;
-
-            }
-            return *output;
-        }
-    }
-*/
 //  Only to be used for operators
 //  Is likely to be deleted next iteration
     void add_dim();
