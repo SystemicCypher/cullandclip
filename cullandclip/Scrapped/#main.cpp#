@@ -1,0 +1,159 @@
+//====================================
+// Names:
+// Austin Loza austinloza@csu.fullerton.edu
+// Richard Ung rung921@csu.fullerton.edu
+//====================================
+
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <vector>
+#include "Camera.h"
+#include "Object.h"
+#include "Placement.h"
+#include "triangle.h"
+#include "vecpt.h"
+#include "frsthelp.h"
+
+
+//Note to self: all trailing \r characters have to be removed from the input files
+int main(){
+	std::string line;
+	std::istringstream* splitter;
+	
+	Vecpt p0(REAL_3D, POINT);
+	p0.set_dim_val(0, 0.0);
+	p0.set_dim_val(1, 0.0);
+	p0.set_dim_val(2, 0.0);
+
+	std::vector<Object*> object_space;
+
+	//Get first line
+	getline(std::cin, line);
+	if(line.find("model") != std::string::npos){
+		while(line != ")"){
+			getline(std::cin, line);
+
+			if(line.find("( tri") != std::string::npos){
+				//collect id
+				splitter = new std::istringstream(line);
+				std::string junk;
+				int id;
+				Vecpt p1(REAL_3D, POINT), p2(REAL_3D, POINT), p3(REAL_3D, POINT);
+				float x, y, z;
+
+				*splitter>>id;
+
+				getline(std::cin, line);
+				splitter = new std::istringstream(line);
+				*splitter>>junk>>x>>y>>z;
+				p1.set_dim_val(0, x);
+				p1.set_dim_val(1, y);
+				p1.set_dim_val(2, z);
+
+				getline(std::cin, line);
+				splitter = new std::istringstream(line);
+				*splitter>>junk>>x>>y>>z;
+				p2.set_dim_val(0, x);
+				p2.set_dim_val(1, y);
+				p2.set_dim_val(2, z);
+
+				getline(std::cin, line);
+				splitter = new std::istringstream(line);
+				*splitter>>junk>>x>>y>>z;
+				p3.set_dim_val(0, x);
+				p3.set_dim_val(1, y);
+				p3.set_dim_val(2, z);
+
+				//           id regpt A  B   C
+				Triangle* tri = new Triangle(id, p0, p1, p2, p3);
+				object_space.push_back(tri);
+
+			}
+
+			else if(line.find("( camera") != std::string::npos){
+				//collect all data
+				splitter = new std::istringstream(line);
+				std::string junk;
+				int id, minsub, dmax;
+				float w, h;
+				*splitter>>id;
+				*splitter>>junk>>junk>>junk>>minsub>>dmax>>w>>h;
+				Camera* cam = new Camera(id, p0, w, h, minsub, dmax);
+				object_space.push_back(cam);
+			}
+			
+			else if(line.find("( bag") != std::string::npos){
+				//collect id and data
+				splitter = new std::istringstream(line);
+				std::string junk;
+				int id;
+				float x, y, z, az, el;
+				Vecpt regpt(REAL_3D, POINT);
+				*splitter>>id>>junk>>junk>>junk>>x>>y>>z;
+				regpt.set_dim_val(0, x);
+				regpt.set_dim_val(1, y);
+				regpt.set_dim_val(2, z);
+				Object* obj = new Object(id, Kind::BAG, regpt);
+				std::vector<KidLoc> kids;
+
+				while(!(line.find(") ) )") != std::string::npos)){
+					getline(std::cin, line);
+					splitter = new std::istringstream(line);
+					*splitter>>junk>>junk>>id>>junk>>junk>>junk>>x>>y>>z>>junk>>az>>el;
+					Vecpt reggie(REAL_3D, POINT);
+					reggie.set_dim_val(0, x);
+					reggie.set_dim_val(1, y);
+					reggie.set_dim_val(2, z);
+					Placement place(reggie, az, el);
+					KidLoc output(id, place);
+					kids.push_back(output);
+				}
+				obj->setSubObjects(kids);
+				object_space.push_back(obj);
+			}
+		}
+
+	}
+
+	//Move to the world space stuff
+	getline(std::cin, line);
+
+	std::vector<KidLoc> world_space;
+	//Capture world space data
+	while(line != ")"){
+			getline(std::cin, line);
+			splitter = new std::istringstream(line);
+			std::string junk;
+			int id;
+			float x, y, z, az, el;
+			*splitter>>junk>>junk>>id>>junk>>junk>>junk>>x>>y>>z>>junk>>az>>el;
+			Vecpt point(REAL_3D, POINT);
+			point.set_dim_val(0, x);
+			point.set_dim_val(1, y);
+			point.set_dim_val(2, z);
+			Placement empl(point, az, el);
+			KidLoc child(id, empl);
+		}
+
+	Vecpt D(REAL_3D, VECTOR), U(REAL_3D, VECTOR), R(REAL_3D, VECTOR);
+	D.set_dim_val(0, 1.0);
+	D.set_dim_val(1, 0.0);
+	D.set_dim_val(2, 0.0);
+
+	U.set_dim_val(0, 0.0);
+	U.set_dim_val(1, 0.0);
+	U.set_dim_val(2, 1.0);
+
+	R.set_dim_val(0, 0.0);
+	R.set_dim_val(1, 1.0);
+	R.set_dim_val(2, 0.0);
+	
+
+	
+
+	
+	
+    return 0;
+}

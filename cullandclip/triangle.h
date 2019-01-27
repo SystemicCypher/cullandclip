@@ -1,20 +1,19 @@
 #ifndef TRIANGLE_H
 #define TRIANGLE_H
 
-#include "object.h"
-#include "vec3.h"
-
+#include "vecpt.h"
+#include "Object.h"
 
 class Triangle : public Object {
 public:
     Triangle();
 
-    Triangle(int objID, vec3 pos, vec3 A, vec3 B, vec3 C);
+    Triangle(int objID, Vecpt pos, Vecpt A, Vecpt B, Vecpt C);
 
-
+	Vecpt get_normal();
 
 private:
-	vec3 vertices[3];
+	Vecpt vertices[3];
 };
 
 #endif

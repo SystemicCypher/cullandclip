@@ -59,7 +59,7 @@ int main(){
 		vec3  vect(reg1, reg2, reg3);
 		Object test(objID, enuID, vect);
 		vec3 output = test.getRegPt();
-		std::cout << enum_to_kindID(enuID) << " " << output[0] << " " << output[1] << " " << output[2];
+		std::cout << test.getObjectID() << " " << output[0] << " " << output[1] << " " << output[2];
 
 
 	}

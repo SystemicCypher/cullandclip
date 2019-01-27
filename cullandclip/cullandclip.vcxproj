@@ -20,17 +20,23 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="frsthelp.h" />
+    <ClInclude Include="GenerateTriangles.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Placement.h" />
     <ClInclude Include="single-include.h" />
     <ClInclude Include="triangle.h" />
     <ClInclude Include="vec3.h" />
-    <ClInclude Include="vec4.h" />
+    <ClInclude Include="vecpt.h" />
+    <ClInclude Include="ViewFrustrum.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="triangle.cpp" />
+    <ClCompile Include="tritest.cpp" />
+    <ClCompile Include="vecpt.cpp" />
+    <ClCompile Include="ViewFrustrum.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
