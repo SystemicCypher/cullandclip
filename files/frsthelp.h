@@ -1,0 +1,593 @@
+//====================================
+// Names:
+// Austin Loza austinloza@csu.fullerton.edu
+// Richard Ung rung921@csu.fullerton.edu
+//====================================
+
+
+#include "vecpt.h"
+#include "triangle.h"
+#include "Camera.h"
+#include <utility>
+
+/*
+* --------------------------------------------------
+* Frustrum Namespace
+* --------------------------------------------------
+* This namespace contains several functions that can
+* define the view frustrum without needing a class.
+* Basically, the idea of this class is to merely take
+* in the data of the classes we have defined prior
+* (those being object, triangle, camera...) and
+* produce the output needed for project #1.
+*/
+
+namespace frustrum {
+
+#define PI 3.14159265
+/*
+* --------------------------------------------------
+* Definitions of Abstractions
+* --------------------------------------------------
+* ABOVE and BELOW are used to more easily understand
+* the true/false results of a couple check functions
+*/
+#define ABOVE true
+#define BELOW false
+
+/*
+* --------------------------------------------------
+* float plane_intersect
+* --------------------------------------------------
+* Description:
+* This function takes a normal vector to a plane and
+* a point/vector to do the dot product against it
+* An abstraction function.
+* --------------------------------------------------
+* Inputs
+* --------------------------------------------------
+* Vecpt normal : A normal vector to some plane
+*
+* Vecpt check : A point to dot against the normal
+* --------------------------------------------------
+* Output
+* --------------------------------------------------
+* A floating point value that is the result of the dot
+* product.
+*/
+	float plane_intersect(Vecpt normal, Vecpt check) {
+		return normal.dot(check);
+	}
+
+/*
+* --------------------------------------------------
+* bool above_or_below
+* --------------------------------------------------
+* Description:
+* This takes a floating point number dot product result and determines if it is
+* above or below a plane. A simple abstraction function.
+* It basically just checks if the value is greater than 0.0 (Above) or less (Below).
+* --------------------------------------------------
+* Input
+* --------------------------------------------------
+* float x : A floating point value that should be a result of
+* a dot product
+* --------------------------------------------------
+* Output
+* --------------------------------------------------
+* A boolean value true (Above) or false (Below)
+*/
+	bool above_or_below(float x) {
+		return (x >= 0.0) ? ABOVE : BELOW;
+	}
+
+/*
+* --------------------------------------------------
+* Vecpt point_on_line
+* --------------------------------------------------
+* Description:
+* It takes a point and vector defining a line, and a scalar value "time" t
+* in order to return a point that is on the line at that "time" t.
+* It is an n-dimensional implementation of this:
+* (a, b, c) + t*<i, j, k> = (x, y, z)
+* initial_point + t * vector = point
+* --------------------------------------------------
+* Inputs
+* --------------------------------------------------
+* Vecpt point : A point that is on the line
+*
+* Vecpt vector : A vector that determines the path/direction of the line
+*
+* float t : The value that determines where on the line this point is
+* --------------------------------------------------
+* Output
+* --------------------------------------------------
+* A point that is on the previously defined line.
+*/
+	Vecpt point_on_line(Vecpt point, Vecpt vector, float t) {
+		if (point.is_point() && vector.is_vector()) return ((vector * t) + point);
+		return Vecpt(0, POINT);
+	}
+
+/*
+* --------------------------------------------------
+* Vecpt* line_maker
+* --------------------------------------------------
+* Description:
+* Smartass answer - it makes lines....
+* Legitimate answer - It takes in a point, a vector (which defines the line),
+* an interval that determines (approximately) how to divide up the range
+* defined by start and end.
+* --------------------------------------------------
+* Inputs
+* --------------------------------------------------
+* Vecpt point : A 3D point that is on the line
+*
+* Vecpt vector : A 3D vector that determines the path/direction of the line
+*
+* float interval : A value that determines the size of the steps to traverse the range
+*
+* float start : A value determining the start of the range to explicitly define a line
+*
+* float end : A value determining the end of the range to explicitly define a line
+* --------------------------------------------------
+* Output
+* --------------------------------------------------
+* This function returns a pointer to an array of Vecpt points that are on the line defined
+* by the point and vector given.
+*/
+	Vecpt* line_maker(Vecpt point, Vecpt vector, float interval, float start, float end) {
+		int range = end - start;
+		Vecpt* funct = new Vecpt[range];
+		for (int i = 0; i < range; i++) {
+			funct[i] = point_on_line(point, vector, start + interval * i);
+		}
+		return funct;
+	}
+
+/*
+* --------------------------------------------------
+* Vecpt generate_point
+* --------------------------------------------------
+* Description:
+* This function generalizes the equation found in page 44 of
+* the game engine programming textbook. Given a basis set of vectors
+* to define a space and axes for it (D, U, R), the limits of the view (near)
+* plane (d, u, r), and an eye (E), this function returns the points of each of the
+* vertices of the view frustrum.
+* --------------------------------------------------
+* Inputs
+* --------------------------------------------------
+* Vecpt E : A 3D point that defines the eye/camera's location.
+*
+* float d : The maximum or minimum depth value. This determines how far
+* the frustrum extends into the "screen" (d_max) and how close the near plane
+* is to the eye (d_min).
+*
+* float u : The maximum or minimum up value. This determines the locations of the
+* top (u_max) and bottom (u_min) cutoffs of the view frustrum.
+*
+* float r : The maximum or minimum right value. This determines the left (r_min) and
+* right (r_max) borders of the view frustrum.
+*
+* Vecpt D : A basis vector in 3D that defines the depth axis.
+*
+* Vecpt U : A basis vector in 3D that defines the up axis.
+*
+* Vecpt R : A basis vector in 3D that defines the right axis.
+*
+* --------------------------------------------------
+* Output
+* --------------------------------------------------
+* A 3D point that is either one of the four in the near plane or one of the four
+* in the far plane.
+*
+*/
+	Vecpt generate_point(Vecpt E, float d, float u, float r, Vecpt D, Vecpt U, Vecpt R) {
+		Vecpt output;
+		output = E + D * d + U * u + R * r;
+		return output;
+	}
+
+/*
+* --------------------------------------------------
+* Vecpt normal_find
+* --------------------------------------------------
+* Description:
+* Given 3 3D points, this function will calculate a normal to the
+* plane that those points create. The syntax is biased toward a
+* view frustrum. Further details in the inputs section below.
+* --------------------------------------------------
+* Inputs
+* --------------------------------------------------
+* Vecpt v1 : A 3D point. Represents the point that is in
+* between the near plane point and the far plane point.
+*
+* Vecpt v2 : A 3D point. Represents the endpoint in the near
+* plane.
+*
+* Vecpt w  : A 3D point. Represents the far plane point.
+* --------------------------------------------------
+* Visual example
+* --------------------------------------------------
+*			far plane
+*       w____________
+*      /           / |
+*     /___________/  |
+*     v1         |   /
+*     |          |  /
+*     | near pln | /
+*     |__________|/
+*     v2
+* --------------------------------------------------
+* Output
+* --------------------------------------------------
+* A 3D vector (Vecpt with dimension 3 and vector == VECTOR)
+* that is normal to the plane that the three input points
+* are in.
+*/
+	Vecpt normal_find(Vecpt v1, Vecpt v2, Vecpt w) {
+		Vecpt near, far;  // Wherever you are~
+		near = v2 - v1;
+		far = w - v1;
+
+		Vecpt normal;
+		normal = near.cross(far);
+
+		return normal;
+	}
+
+/*
+* --------------------------------------------------
+* bool ranger
+* --------------------------------------------------
+* Description:
+* An abstraction function. Allows for simple checking of a symmetric range.
+* (e.g. 0.5 to -0.5)
+* --------------------------------------------------
+* Inputs
+* --------------------------------------------------
+* float range_ends : The endpoints of the range. Basically the value that is
+* the right end of the range (positive side). The left end is -1 * range_ends.
+* This should be a positive float.
+*
+* float check : The floating point value to check. It's compared to both ends to
+* see if it fits within the range.
+* --------------------------------------------------
+* Output
+* --------------------------------------------------
+* A boolean value, true if the float to check is within the range, false otherwise
+*/
+	bool ranger(float range_ends, float check) {
+		if (check >= -range_ends && check <= range_ends) return true;
+		return false;
+	}
+
+/*
+* --------------------------------------------------
+* Vecpt find_intersection
+* --------------------------------------------------
+* Description:
+* Determines if an intersection between a line and a point exists,
+* if so, it returns that intersection point.
+* --------------------------------------------------
+* Inputs
+* --------------------------------------------------
+* Vecpt A : A 3D point that is one point of a line - should always be the origin
+* of the line/"ray"
+*
+* Vecpt B : A 3D point that is the other end of the line
+*
+* Vecpt plane_normal: A 3D vector that is normal to some plane
+*
+* Vecpt point_on_plane : A point on the plane
+* --------------------------------------------------
+* Output
+* --------------------------------------------------
+* A 3D point (Vecpt with dimension 3 and vector == POINT) that is NaN if there
+* were no intersections found or the intersection if there was one found.
+*/
+	Vecpt find_intersection(Vecpt A, Vecpt B, Vecpt plane_normal, Vecpt point_on_plane) {
+		float d = plane_normal.dot(point_on_plane);
+		Vecpt line = B - A;
+		float  parallel = plane_normal.dot(line);
+		if (parallel == 0.0f) {
+			return Vecpt();
+		}
+		float x = (d - plane_normal.dot(A)) / plane_normal.dot(line);
+		Vecpt normalized_line = line / line.magnitude();
+		return A + normalized_line * x;
+
+	}
+
+/*
+* --------------------------------------------------
+* Triangle* triangulate
+* --------------------------------------------------
+* Description:
+* Converts a polygon into an array of triangles as a triangular fan. 
+* Uses the first vertex of the polygon as a shared point for all 
+* subsequently generated triangles. 
+* For every other point in the array, take the vertex and its neighbor,
+* and construct an "edge" between the shared point and the neighbor to 
+* form a triangle.
+* Ignores any polygon with less than 4 points and returns a nullptr.
+* (already a triangle, a line segment, or a point). 
+* Checks if the triangle is already in view
+* Function assumes the polygon is planar and convex. 
+* --------------------------------------------------
+* Inputs
+* --------------------------------------------------
+* ref_pt : A 3D point that is used as a reference point 
+*          to determine if the polygon's points are stored CCW
+*
+* Vecpt D, U R : Basis vectors 
+*
+* Vecpt* polygon: Pointer to an array of points that make up the polygon
+*
+* int num_pts : The number of points for the polygon 
+* --------------------------------------------------
+* Output
+* --------------------------------------------------
+* An array of newly generated triangles from the polygon.
+*/
+	Triangle* triangulate(Vecpt ref_pt, Vecpt D, Vecpt U, Vecpt R, Vecpt* polygon, int num_pts) {
+		if (num_pts < 4) return nullptr;
+		
+		Vecpt shared_pt = polygon[0];
+		int num_triangles = num_pts - 2;
+		Triangle* output = new Triangle[num_triangles];
+
+		Vecpt norm = normal_find(polygon[1], polygon[0], polygon[2]);
+		bool ccw = D.dot(norm) > 0 ? true : false;
+
+		// TODO: Problem generating unique IDs for the triangle...
+		if(ccw) {
+			for (int i = 0; i < num_triangles; i++) { // CCW, iterate normally
+				output[i] = Triangle(i, ref_pt, shared_pt, polygon[i + 1], polygon[i + 2]);
+			}
+		}
+		else {
+			for (int i = num_pts; i > 1; i--) { // not CCW, iterate from the back of the array
+				output[i] = Triangle(i, ref_pt, shared_pt, polygon[i - 1], polygon[i - 2]);
+			}
+		}
+
+		return output;
+	}
+
+/*
+* --------------------------------------------------
+* std::vector<Triangle> clip_to_plane
+* --------------------------------------------------
+* Description:
+* Assuming no large triangles with points outside frustrum and all triangles
+* outside frustrum have been culled. 
+* Clips a triangle to a view frustrum plane.
+* An array of triangles (sub-triangles) will be tested against each plane of the
+* view frustrum. Each triangle will be "sliced" up by the view frustrum at the points 
+* of intersection between the plane and the triangle. 
+* The polygon generated from the triangle's vertices and intersections
+* will be triangularized and new triangles will be added to the vector of 
+* triangles to be further processed by the remaining planes. 
+* --------------------------------------------------
+* Inputs
+* --------------------------------------------------
+* ref_pt : A 3D point that is used as a reference point
+*          to determine if the polygon's points are stored CCW
+*
+* Vecpt D, U R : Basis vectors
+*
+* Vecpt plane_normal: Normal to the frustrum plane we are clipping with
+*
+* Vecpt pt_on_plane: A point on the plane (probably a vertex of the plane)
+*
+* Triangle triangle: The triangle to clip 
+* --------------------------------------------------
+* Output
+* --------------------------------------------------
+* A vector of newly generated triangles after clipping. 
+*/
+	std::vector<Triangle> clip_to_plane(Vecpt ref_pt, Vecpt D, Vecpt U, Vecpt R,
+		Vecpt plane_normal, Vecpt pt_on_plane, Triangle triangle) {
+		const int NUM_TRI_EDGES = 3;
+		const int MAX_POINTS = 4;
+
+		std::vector<Triangle> input_triangles;
+		input_triangles.push_back(triangle);
+
+		int init_num_triangles = input_triangles.size();
+
+		for (int j = 0; j < init_num_triangles; j++) { // for triangle 
+			Vecpt* polygon = new Vecpt[MAX_POINTS];
+			int num_points = 0;
+
+			for (int k = 0; k < NUM_TRI_EDGES; k++) { // for every edge
+				int A = k % NUM_TRI_EDGES;
+				int B = (k + 1) % NUM_TRI_EDGES;
+
+				Vecpt pt = find_intersection(input_triangles[j][A], input_triangles[j][B], plane_normal, pt_on_plane);
+				float result = plane_intersect(plane_normal, input_triangles[j][A] - pt_on_plane);
+
+				bool inside = above_or_below(result);
+				if (inside) {
+					polygon[num_points] = input_triangles[j][A];
+					num_points++;
+				}
+				if (pt.get_value(0) != NAN) {
+					polygon[num_points] = pt;
+					num_points++;
+				}
+			}
+
+			// Remove the initial triangle that was processed
+			input_triangles.erase(input_triangles.begin());
+
+			Triangle* output = triangulate(ref_pt, D, U, R, polygon, num_points);
+			for (int i = 0; i < num_points - 2; i++) {
+				input_triangles.push_back(output[i]);
+			}
+			delete[] polygon;
+		}
+		return input_triangles;
+	}
+
+
+	Vecpt object_to_world(Vecpt point, Vecpt new_origin, float az, float el) {
+		float x_a, x_e, y_a, y_e, z_a, z_e, x, y, z;
+		az = az * (PI / 180.0);
+		el = el * (PI / 180.0);
+		//az rotation
+		x_a = cos(az)*point.get_value(0) - sin(az)*point.get_value(1);
+		y_a = sin(az)*point.get_value(0) + cos(az)*point.get_value(1);
+		z_a = point.get_value(2);
+		//elev rotation
+		x_e = cos(el)*x_a + sin(el)*z_a;
+		y_e = y_a;
+		z_e = -sin(el)*x_a + cos(el)*z_a;
+		//translation
+		x = x_e + new_origin.get_value(0);
+		y = y_e + new_origin.get_value(1);
+		z = z_e + new_origin.get_value(2);
+		Vecpt output(3, POINT);
+		output.set_dim_val(0, x);
+		output.set_dim_val(1, y);
+		output.set_dim_val(2, z);
+		return output;
+	}
+
+	Triangle triangle_o2w(Triangle tri, Vecpt new_origin, float az, float el){
+		Vecpt p1, p2, p3;
+		p1 = object_to_world(tri[0], new_origin, az, el);
+		p2 = object_to_world(tri[1], new_origin, az, el);
+		p3 = object_to_world(tri[2], new_origin, az, el);
+		Triangle output_triangle(tri.getObjectID(), new_origin, p1, p2, p3);
+		return output_triangle;
+	}
+
+	Vecpt world_to_cam(Vecpt p, Vecpt new_origin, float az, float el){
+		float x_t, y_t, z_t, x_e, y_e, z_e, x, y, z;
+		az = -az * (PI/180.0);
+		el = -el*(PI/180.0);
+
+		//inverse translation
+		x_t = p.get_value(0) - new_origin.get_value(0);
+		y_t = p.get_value(1) - new_origin.get_value(1);
+		z_t = p.get_value(2) - new_origin.get_value(2);
+		//inverse elevation rotation
+		x_e = cos(el)*x_t + sin(el)*z_t;
+		y_e = y_t;
+		z_e = -sin(el)*x_t + cos(el)*z_t;
+		//inverse azimuth
+		x = cos(az)*x_e - sin(az)*y_e;
+		y = sin(az)*x_e + cos(az)*y_e;
+		z = z_e;
+		Vecpt output(REAL_3D, POINT);
+		output.set_dim_val(0, x);
+		output.set_dim_val(1, y);
+		output.set_dim_val(2, z);
+		return output;
+	}
+
+	Triangle triangle_w2c(Triangle tri, Vecpt new_origin, float az, float el){
+		Vecpt p1, p2, p3;
+		p1 = world_to_cam(tri[0], new_origin, az, el);
+		p2 = world_to_cam(tri[1], new_origin, az, el);
+		p3 = world_to_cam(tri[2], new_origin, az, el);
+		Triangle output_triangle(tri.getObjectID(), new_origin, p1, p2, p3);
+		return output_triangle;
+	}
+
+	Vecpt persp_project(Vecpt point, float dmin, float dmax, float width, float height){
+		float x, y, z, w;
+		float fov_x, fov_y;
+		fov_y = sqrt(pow(dmin, 2.0) + pow(0.5*height, 2.0));
+		fov_x = sqrt(pow(dmin, 2.0) + pow(0.5*width, 2.0));
+		x = atan(fov_x) * point.get_value(0);
+		y = atan(fov_y) * point.get_value(1);
+		z = (-(dmax + dmin)/(dmax - dmin))*point.get_value(2) + -2*(dmax * dmin)/(dmax - dmin);
+		w = -1*point.get_value(2);
+		x = x/w;
+		y = y/w;
+		z = z/w;
+		Vecpt output(REAL_3D, POINT);
+		output.set_dim_val(0, x);
+		output.set_dim_val(1, y);
+		output.set_dim_val(2, z);
+		return output;
+	}
+
+	Triangle triangle_project(Triangle tri, float dmin, float dmax, float width, float height){
+		Vecpt p1, p2, p3;
+		p1 = persp_project(tri[0], dmin, dmax, width, height);
+		p2 = persp_project(tri[1], dmin, dmax, width, height);
+		p3 = persp_project(tri[2], dmin, dmax, width, height);
+		Triangle output_tri(tri.getObjectID(), tri.getRegPt(), p1, p2, p3);
+		return output_tri;
+	}
+
+	enum Verdict{
+		CLIP,
+		CULL,
+		TRI
+	};
+
+	bool inside_clipspace(Vecpt x){
+		bool X, Y, Z;
+		X = true;
+		Y = true;
+		Z = true;
+		if(x[0] >= 1.05 || x[0] <= -1.05){
+			X = false;
+		}
+		if(x[1] >= 1.05 || x[1] <= -1.05){
+			Y = false;
+		}
+		if(x[2] >= 1.05 || x[2] <= 1.05){
+			Z = false;
+		}
+
+		if(X && Y && Z){
+			return true;
+		}
+		else return false;
+	}
+
+	std::pair<int, Verdict> cullandclip(Triangle tri){
+		Vecpt A, B, C;
+		bool A_in, B_in, C_in;
+		std::pair<int, Verdict> output;
+		
+		A = tri.get_vertex(0);
+		A_in = inside_clipspace(A);
+
+		B = tri.get_vertex(1);
+		B_in = inside_clipspace(B);
+		
+		C = tri.get_vertex(2);
+		C_in = inside_clipspace(C);
+
+		output.first = tri.getObjectID();
+
+		if(A_in && B_in && C_in){
+			output.second = Verdict::TRI;
+		}
+		else if(!A_in && !B_in && !C_in){
+			output.second = Verdict::CULL;
+		}
+		else{
+			output.second = Verdict::CLIP;
+		}
+
+		return output;
+
+	}
+
+	Triangle clip(Triangle tri){
+		return Triangle();
+	}
+
+
+
+}
+

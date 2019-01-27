@@ -481,8 +481,6 @@ namespace frustrum {
 		D.set_dim_val(0, eye.get_value(0) + cos(az));
 		D.set_dim_val(1, eye.get_value(1);
 		D.set_dim_val(2, eye.get_value(3) + sin(az));
-
 	}
-
 }
 

@@ -39,12 +39,6 @@
     <ClInclude Include="frsthelp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GenerateTriangles.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ViewFrustrum.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
